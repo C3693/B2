@@ -1324,6 +1324,36 @@ const sombraAutenticacion =
 
             abriendoAutenticacion = true;
             
+            
+            // IDENTIFICAR LAS TRES OPCIONES AL CONFIRMAR
+            const selecciones = Array.from(campos).map(function(campo) {
+
+                const valorSeleccionado = campo.querySelector(
+                    ".formulario-valor"
+                ).textContent.trim();
+
+                const opciones = Array.from(
+                    campo.querySelectorAll(".formulario-opcion")
+                );
+
+                return opciones.findIndex(function(opcion) {
+                    return opcion.dataset.valor === valorSeleccionado;
+                }) + 1;
+
+            });
+
+            // ASIGNAR LA IMAGEN CORRESPONDIENTE
+            if (selecciones.every(numero => numero > 0)) {
+
+                const nombreImagen = selecciones.join("-") + ".png";
+
+                document.querySelector(
+                    "#resultado .resultado-imagen-fondo"
+                ).src = nombreImagen;
+
+            }
+
+            
 
             const loadingScreen =
                 document.querySelector(".loading-screen");
